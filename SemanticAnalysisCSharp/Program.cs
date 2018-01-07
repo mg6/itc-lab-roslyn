@@ -33,6 +33,10 @@ namespace SemanticAnalysisCSharp
                 }");
 
             var root = tree.GetRoot() as CompilationUnitSyntax;
+
+            var compilation = CSharpCompilation.Create("HelloWorld")
+                .AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly.Location))
+                .AddSyntaxTrees(tree);
         }
     }
 }
