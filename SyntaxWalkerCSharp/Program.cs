@@ -1,5 +1,7 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -46,6 +48,20 @@ namespace SyntaxWalkerCSharp
             }");
 
             var root = tree.GetRoot() as CompilationUnitSyntax;
+
+            var collector = new UsingCollector();
+            collector.Visit(root);
+
+            var actual = collector.Usings.Select(e => e.Name.ToString()).ToList();
+            var expected = new List<string>() {
+                "Microsoft.CodeAnalysis",
+                "Microsoft.CodeAnalysis.CSharp",
+                "Microsoft",
+                "Microsoft.Win32",
+                "Microsoft.CSharp"
+            };
+            Debug.Assert(actual.SequenceEqual(expected),
+                String.Format("actual:\n{0}\nexpected:\n{1}", String.Join(", ", actual), String.Join(", ", expected)));
         }
     }
 }
