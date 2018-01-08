@@ -12,13 +12,14 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Rename;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.CodeAnalysis.Formatting;
 
 namespace ConstAnalyzer
 {
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(ConstAnalyzerCodeFixProvider)), Shared]
     public class ConstAnalyzerCodeFixProvider : CodeFixProvider
     {
-        private const string title = "Make uppercase";
+        private const string title = "Make constant";
 
         public sealed override ImmutableArray<string> FixableDiagnosticIds
         {
@@ -40,20 +41,42 @@ namespace ConstAnalyzer
             var diagnosticSpan = diagnostic.Location.SourceSpan;
 
             // Find the type declaration identified by the diagnostic.
-            var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<TypeDeclarationSyntax>().First();
+            var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<LocalDeclarationStatementSyntax>().First();
 
             // Register a code action that will invoke the fix.
             context.RegisterCodeFix(
                 CodeAction.Create(
                     title: title,
-                    createChangedSolution: c => MakeUppercaseAsync(context.Document, declaration, c), 
+                    createChangedDocument: c => MakeConstAsync(context.Document, declaration, c), 
                     equivalenceKey: title),
                 diagnostic);
         }
 
-        private async Task<Solution> MakeUppercaseAsync(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
+        private async Task<Document> MakeConstAsync(Document document, LocalDeclarationStatementSyntax localDeclaration, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            // remove leading trivia
+            var firstToken = localDeclaration.GetFirstToken();
+            var leadingTrivia = firstToken.LeadingTrivia;
+            var trimmedLocal = localDeclaration.ReplaceToken(
+                firstToken, firstToken.WithLeadingTrivia(SyntaxTriviaList.Empty));
+
+            // create const token with leading trivia
+            var constToken = SyntaxFactory.Token(leadingTrivia, SyntaxKind.ConstKeyword, SyntaxFactory.TriviaList(SyntaxFactory.ElasticMarker));
+
+            // insert const token as first modifier
+            var newModifiers = trimmedLocal.Modifiers.Insert(0, constToken);
+
+            // production new declaration
+            var newLocal = trimmedLocal.WithModifiers(newModifiers);
+
+            // add annotation to reformat the declaration
+            var formattedLocal = newLocal.WithAdditionalAnnotations(Formatter.Annotation);
+
+            // replace old tree with new local declaration
+            var oldRoot = await document.GetSyntaxRootAsync(cancellationToken);
+            var newRoot = oldRoot.ReplaceNode(localDeclaration, formattedLocal);
+
+            return document.WithSyntaxRoot(newRoot);
         }
     }
 }
