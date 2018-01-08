@@ -7,9 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GettingStartedCSharpCodeAna
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyntaxWalkerCSharp", "SyntaxWalkerCSharp\SyntaxWalkerCSharp.csproj", "{9E31AED8-6CBC-4C87-8D8F-385854429B12}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemanticAnalysisCSharp", "SemanticAnalysisCSharp\SemanticAnalysisCSharp.csproj", "{B3D1A30A-DFB7-4F83-B094-6322A8A98201}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SemanticAnalysisCSharp", "SemanticAnalysisCSharp\SemanticAnalysisCSharp.csproj", "{B3D1A30A-DFB7-4F83-B094-6322A8A98201}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConstructionCSharp", "ConstructionCSharp\ConstructionCSharp.csproj", "{D98702AF-EA94-407A-833F-E75B349A0ACC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConstructionCSharp", "ConstructionCSharp\ConstructionCSharp.csproj", "{D98702AF-EA94-407A-833F-E75B349A0ACC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransformationCSharp", "TransformationCSharp\TransformationCSharp.csproj", "{E374217D-8AAB-43A9-97B8-983C0DC1F204}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{D98702AF-EA94-407A-833F-E75B349A0ACC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D98702AF-EA94-407A-833F-E75B349A0ACC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D98702AF-EA94-407A-833F-E75B349A0ACC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E374217D-8AAB-43A9-97B8-983C0DC1F204}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E374217D-8AAB-43A9-97B8-983C0DC1F204}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E374217D-8AAB-43A9-97B8-983C0DC1F204}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E374217D-8AAB-43A9-97B8-983C0DC1F204}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
