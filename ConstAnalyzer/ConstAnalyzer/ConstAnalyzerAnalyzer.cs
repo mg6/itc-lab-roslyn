@@ -54,6 +54,9 @@ namespace ConstAnalyzer
                 return;
             }
 
+            var variableTypeName = localDeclaration.Declaration.Type;
+            var variableType = context.SemanticModel.GetTypeInfo(variableTypeName).ConvertedType;
+
             foreach (var variable in localDeclaration.Declaration.Variables)
             {
                 // ignore when no initializer: int x;
@@ -64,6 +67,11 @@ namespace ConstAnalyzer
                 // ignore non-compile-time const initializer: int x = f(y);
                 var constValue = context.SemanticModel.GetConstantValue(initializer.Value);
                 if (!constValue.HasValue)
+                    return;
+
+                // ignore declarations with incorrect type (non-castable expression): int i = "xyz";
+                var conversion = context.SemanticModel.ClassifyConversion(initializer.Value, variableType);
+                if (!conversion.Exists || conversion.IsUserDefined)
                     return;
             }
 
