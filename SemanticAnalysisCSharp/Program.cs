@@ -57,6 +57,28 @@ namespace SemanticAnalysisCSharp
                 "Threading",
             };
             Debug.Assert(expectedNsMembers.All(e => actualNsMembers.Contains(e)));
+
+            var helloWorldString = root.DescendantNodes()
+                .OfType<LiteralExpressionSyntax>()
+                .First();
+            Debug.Assert(helloWorldString.Token.ValueText == "Hello world!");
+
+            var literalInfo = model.GetTypeInfo(helloWorldString);
+            var literalType = literalInfo.Type;
+            Debug.Assert(literalType.Name == "String");
+
+            var members = (from method in literalType.GetMembers().OfType<IMethodSymbol>()
+                           where method.ReturnType.Equals(literalType) &&
+                                 method.DeclaredAccessibility == Accessibility.Public
+                           select method.Name).Distinct();
+
+            var actualStringMembers = members.ToList();
+            var expectedStringMembers = new List<string> {
+                "Join",
+                "Substring",
+                "Format",
+            };
+            Debug.Assert(expectedStringMembers.All(e => actualStringMembers.Contains(e)));
         }
     }
 }
