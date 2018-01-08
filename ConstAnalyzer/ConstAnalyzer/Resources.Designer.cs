@@ -62,7 +62,7 @@ namespace ConstAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Type names should be all uppercase..
+        ///   Looks up a localized string similar to Make constant.
         /// </summary>
         internal static string AnalyzerDescription {
             get {
@@ -71,7 +71,7 @@ namespace ConstAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Type name &apos;{0}&apos; contains lowercase letters.
+        ///   Looks up a localized string similar to Can be made constant.
         /// </summary>
         internal static string AnalyzerMessageFormat {
             get {
@@ -80,7 +80,7 @@ namespace ConstAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Type name contains lowercase letters.
+        ///   Looks up a localized string similar to Variables can be made constant.
         /// </summary>
         internal static string AnalyzerTitle {
             get {

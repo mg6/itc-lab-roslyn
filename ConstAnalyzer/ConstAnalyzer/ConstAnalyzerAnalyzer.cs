@@ -10,6 +10,17 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace ConstAnalyzer
 {
+    /// <summary>
+    /// Diagnostic analyzer that suggests adding `const` qualifiers to local variable declarations (compile-time constness).
+    /// </summary>
+    /// <remarks>
+    /// Works with initializers in this forms:
+    /// 
+    ///     Type variable = SomeConstExpression;
+    ///     Type variable1 = SomeConst1,
+    ///          variable2 = SomeConst2, ... ;
+    /// 
+    /// </remarks>
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class ConstAnalyzerAnalyzer : DiagnosticAnalyzer
     {
@@ -20,7 +31,7 @@ namespace ConstAnalyzer
         private static readonly LocalizableString Title = new LocalizableResourceString(nameof(Resources.AnalyzerTitle), Resources.ResourceManager, typeof(Resources));
         private static readonly LocalizableString MessageFormat = new LocalizableResourceString(nameof(Resources.AnalyzerMessageFormat), Resources.ResourceManager, typeof(Resources));
         private static readonly LocalizableString Description = new LocalizableResourceString(nameof(Resources.AnalyzerDescription), Resources.ResourceManager, typeof(Resources));
-        private const string Category = "Naming";
+        private const string Category = "Usage";
 
         private static DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId, Title, MessageFormat, Category, DiagnosticSeverity.Warning, isEnabledByDefault: true, description: Description);
 
@@ -30,12 +41,43 @@ namespace ConstAnalyzer
         {
             // TODO: Consider registering other actions that act on syntax instead of or in addition to symbols
             // See https://github.com/dotnet/roslyn/blob/master/docs/analyzers/Analyzer%20Actions%20Semantics.md for more information
-            context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
+            context.RegisterSyntaxNodeAction(AnalyzeNode, SyntaxKind.LocalDeclarationStatement);
         }
 
-        private static void AnalyzeSymbol(SymbolAnalysisContext context)
+        private static void AnalyzeNode(SyntaxNodeAnalysisContext context)
         {
-            throw new NotImplementedException();
+            var localDeclaration = context.Node as LocalDeclarationStatementSyntax;
+
+            // check if already const
+            if (localDeclaration.Modifiers.Any(SyntaxKind.ConstKeyword))
+            {
+                return;
+            }
+
+            foreach (var variable in localDeclaration.Declaration.Variables)
+            {
+                // ignore when no initializer: int x;
+                var initializer = variable.Initializer;
+                if (initializer == null)
+                    return;
+
+                // ignore non-compile-time const initializer: int x = f(y);
+                var constValue = context.SemanticModel.GetConstantValue(initializer.Value);
+                if (!constValue.HasValue)
+                    return;
+            }
+
+            var dataFlowAnalysis = context.SemanticModel.AnalyzeDataFlow(localDeclaration);
+
+            foreach (var variable in localDeclaration.Declaration.Variables)
+            {
+                var variableSymbol = context.SemanticModel.GetDeclaredSymbol(variable);
+                if (dataFlowAnalysis.WrittenOutside.Contains(variableSymbol))
+                    return;
+            }
+
+            var diagnostic = Diagnostic.Create(Rule, context.Node.GetLocation());
+            context.ReportDiagnostic(diagnostic);
         }
     }
 }
