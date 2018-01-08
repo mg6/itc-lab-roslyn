@@ -47,6 +47,15 @@ namespace ConstructionCSharp
                 }");
 
             var root = tree.GetRoot() as CompilationUnitSyntax;
+
+            var oldUsing = root.Usings[1]; // using System.Collections;
+            var newUsing = oldUsing.WithName(name);
+            Debug.Assert(root.ToString().Contains("using System.Collections;"));
+            Debug.Assert(!root.ToString().Contains("using System.Collections.Generic;"));
+
+            root = root.ReplaceNode(oldUsing, newUsing);
+            Debug.Assert(!root.ToString().Contains("using System.Collections;"));
+            Debug.Assert(root.ToString().Contains("using System.Collections.Generic;"));
         }
     }
 }
