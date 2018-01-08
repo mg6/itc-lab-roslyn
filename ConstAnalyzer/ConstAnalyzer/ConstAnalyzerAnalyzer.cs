@@ -73,6 +73,16 @@ namespace ConstAnalyzer
                 var conversion = context.SemanticModel.ClassifyConversion(initializer.Value, variableType);
                 if (!conversion.Exists || conversion.IsUserDefined)
                     return;
+
+                // ignore string declarations of non-string type
+                if (constValue.Value is string)
+                {
+                    if (variableType.SpecialType != SpecialType.System_String)
+                        return;
+                }
+                // ignore non-null references
+                else if (variableType.IsReferenceType && constValue.Value != null)
+                    return;
             }
 
             var dataFlowAnalysis = context.SemanticModel.AnalyzeDataFlow(localDeclaration);
