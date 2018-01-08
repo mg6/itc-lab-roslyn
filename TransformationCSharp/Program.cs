@@ -16,14 +16,14 @@ namespace TransformationCSharp
     {
         static void Main(string[] args)
         {
-            Compilation test = CreateTestCompilation();
+            var test = CreateTestCompilation();
 
             foreach (SyntaxTree sourceTree in test.SyntaxTrees)
             {
-                SemanticModel model = test.GetSemanticModel(sourceTree);
+                var model = test.GetSemanticModel(sourceTree);
 
-                TypeInferenceRewriter rewriter = new TypeInferenceRewriter(model);
-                SyntaxNode newSource = rewriter.Visit(sourceTree.GetRoot());
+                var rewriter = new TypeInferenceRewriter(model);
+                var newSource = rewriter.Visit(sourceTree.GetRoot());
 
                 if (newSource != sourceTree.GetRoot())
                 {
@@ -34,14 +34,14 @@ namespace TransformationCSharp
 
         private static Compilation CreateTestCompilation()
         {
-            String programPath = @"Program.cs";
-            String programText = File.ReadAllText(programPath);
-            SyntaxTree programTree = CSharpSyntaxTree.ParseText(programText)
+            var programPath = @"Program.cs";
+            var programText = File.ReadAllText(programPath);
+            var programTree = CSharpSyntaxTree.ParseText(programText)
                 .WithFilePath(programPath);
 
-            String rewriterPath = @"TypeInferenceRewriter.cs";
-            String rewriterText = File.ReadAllText(rewriterPath);
-            SyntaxTree rewriterTree = CSharpSyntaxTree.ParseText(rewriterText)
+            var rewriterPath = @"TypeInferenceRewriter.cs";
+            var rewriterText = File.ReadAllText(rewriterPath);
+            var rewriterTree = CSharpSyntaxTree.ParseText(rewriterText)
                 .WithFilePath(rewriterPath);
 
             SyntaxTree[] sourceTrees = { programTree, rewriterTree };

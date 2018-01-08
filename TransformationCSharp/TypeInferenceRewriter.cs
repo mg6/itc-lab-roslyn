@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -43,12 +43,12 @@ namespace TransformationCSharp
                 return node;
             }
 
-            VariableDeclaratorSyntax declarator = node.Declaration.Variables.First();
+            var declarator = node.Declaration.Variables.First();
 
-            TypeSyntax variableTypeName = node.Declaration.Type;
-            ITypeSymbol variableType = SemanticModel.GetSymbolInfo(variableTypeName).Symbol as ITypeSymbol;
+            var variableTypeName = node.Declaration.Type;
+            var variableType = SemanticModel.GetSymbolInfo(variableTypeName).Symbol as ITypeSymbol;
 
-            TypeInfo initializerInfo = SemanticModel.GetTypeInfo(declarator.Initializer.Value);
+            var initializerInfo = SemanticModel.GetTypeInfo(declarator.Initializer.Value);
 
             if (variableType == initializerInfo.Type)
             {
