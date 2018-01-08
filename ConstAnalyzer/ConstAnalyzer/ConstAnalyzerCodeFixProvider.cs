@@ -13,6 +13,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Rename;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.Formatting;
+using Microsoft.CodeAnalysis.Simplification;
 
 namespace ConstAnalyzer
 {
@@ -66,8 +67,35 @@ namespace ConstAnalyzer
             // insert const token as first modifier
             var newModifiers = trimmedLocal.Modifiers.Insert(0, constToken);
 
+            // infer type for `var` declaration
+            var variableDeclaration = localDeclaration.Declaration;
+            var variableTypeName = variableDeclaration.Type;
+            if (variableTypeName.IsVar)
+            {
+                var semanticModel = await document.GetSemanticModelAsync(cancellationToken);
+
+                // ensure `var` is not an alias, as in `using var = Type;`
+                var aliasInfo = semanticModel.GetAliasInfo(variableTypeName);
+                if (aliasInfo == null)
+                {
+                    // infer type for `var`
+                    var type = semanticModel.GetTypeInfo(variableTypeName).ConvertedType;
+                    if (type.Name != "var")
+                    {
+                        var typeName = SyntaxFactory.ParseTypeName(type.ToDisplayString())
+                            .WithLeadingTrivia(variableTypeName.GetLeadingTrivia())
+                            .WithTrailingTrivia(variableTypeName.GetTrailingTrivia());
+
+                        // simplify type name
+                        var simplifiedTypeName = typeName.WithAdditionalAnnotations(Simplifier.Annotation);
+                        variableDeclaration = variableDeclaration.WithType(simplifiedTypeName);
+                    }
+                }
+            }
+
             // production new declaration
-            var newLocal = trimmedLocal.WithModifiers(newModifiers);
+            var newLocal = trimmedLocal.WithModifiers(newModifiers)
+                                       .WithDeclaration(variableDeclaration);
 
             // add annotation to reformat the declaration
             var formattedLocal = newLocal.WithAdditionalAnnotations(Formatter.Annotation);
