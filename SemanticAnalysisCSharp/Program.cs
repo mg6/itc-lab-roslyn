@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -37,6 +38,25 @@ namespace SemanticAnalysisCSharp
             var compilation = CSharpCompilation.Create("HelloWorld")
                 .AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly.Location))
                 .AddSyntaxTrees(tree);
+
+            var model = compilation.GetSemanticModel(tree);
+
+            var usingInfo = model.GetSymbolInfo(root.Usings[0].Name);
+
+            var usingSymbol = usingInfo.Symbol as INamespaceSymbol;
+            Debug.Assert(usingSymbol.Name == "System");
+            Debug.Assert(usingSymbol.Kind == SymbolKind.Namespace);
+
+            var nsMembers = usingSymbol.GetNamespaceMembers();
+
+            var actualNsMembers = nsMembers.Select(e => e.Name.ToString()).ToList();
+            var expectedNsMembers = new List<string>() {
+                "Collections",
+                "IO",
+                "Numerics",
+                "Threading",
+            };
+            Debug.Assert(expectedNsMembers.All(e => actualNsMembers.Contains(e)));
         }
     }
 }
